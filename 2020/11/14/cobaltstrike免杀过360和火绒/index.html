@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  
+  
+  
+    <meta name="description" content="内网渗透实战篇">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <title>
+    cobaltstrike免杀过360和火绒 |
+    
+    北城荒</title>
+  
+    <link rel="shortcut icon" href="/favicon.ico">
+  
+  
+<link rel="stylesheet" href="/css/style.css">
+
+  
+<link rel="stylesheet" href="/css/technology.css">
+
+  
+    
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.min.css">
+
+  
+  
+<script src="/js/pace.min.js"></script>
+
+<meta name="generator" content="Hexo 5.2.0"></head>
+
+<body>
+  <div id="container">
+    <div id="wrap">
+      <section class="outer">
+  <article id="post-cobaltstrike免杀过360和火绒" class="article article-type-post" itemscope itemprop="blogPost" data-scroll-reveal>
+
+  <div class="article-inner">
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      cobaltstrike免杀过360和火绒
+    </h1>
+  
+
+      </header>
+    
+
+    
+      <div class="article-meta">
+        <a href="/2020/11/14/cobaltstrike%E5%85%8D%E6%9D%80%E8%BF%87360%E5%92%8C%E7%81%AB%E7%BB%92/" class="article-date">
+  <time datetime="2020-11-14T12:56:31.000Z" itemprop="datePublished">2020-11-14</time>
+</a>
+        
+      </div>
+    
+
+    <div class="article-entry" itemprop="articleBody">
+      
+
+      
+
+      
+        <p>在免杀之前需要自己处理一下cobaltstrike的相关特征，和更新一下证书。不然虽然文件免杀了，可是上线的时候会有特征，会被火绒拦截。</p>
+<pre><code>     具体参考以下文章
+      https://www.wangan.com/articles/1144
+      https://paper.seebug.org/1349/
+      https://cloud.tencent.com/developer/article/1688045</code></pre>
+<p>1、生成payload</p>
+<pre><code>     首先我们先来生成一个32位的payload，这里我们的监听器使用http的方式，因为证书我没搞，所以就不用https的了.</code></pre>
+<p><img src="/images/pasted-22.png" alt="upload successful"></p>
+<p>2、编码</p>
+<pre><code>    之后我们需要把这个shellcode转换为base64编码的格式，运行&quot;cat payload.bin | base64 -w 0&quot;;这样就可以得到编码后的shellcode。</code></pre>
+<p><img src="/images/pasted-15.png" alt="upload successful"></p>
+<p>3、js加载shellcode</p>
+<pre><code>    我们下面就要用到一个js加载cs的shellcode的代码了，相关代码可以来这里下载: https://github.com/shenligang123/js-shellcode，我们需要利用的是CACTUSTORCH.js这个文件。
+     将生成的shellcode放在code参数里就可以了。</code></pre>
+<p><img src="/images/pasted-16.png" alt="upload successful"></p>
+<pre><code>    现在这种方式已经被查杀，我们再次利用js加密来实现免杀。
+    来这个网站https://www.sojson.com/jsobfuscator.html这里加密就行了。</code></pre>
+<p><img src="/images/pasted-17.png" alt="upload successful"></p>
+<pre><code>    之后我们用360杀毒与火绒检测下，这里我的火绒显示报毒了，我又加密了几次，就好了，之后就均无提示上线</code></pre>
+<p><img src="/images/pasted-18.png" alt="upload successful"></p>
+<p><img src="/images/pasted-19.png" alt="upload successful"></p>
+<p>4、运行js文件上线</p>
+<p><img src="/images/pasted-23.png" alt="upload successful"></p>
+<div id="gitalk-container"></div>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.css">
+<script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+<script src="https://priesttomb.github.io/js/md5.min.js"></script>
+<script >
+var gitalk = new Gitalk({
+  clientID: '89b3b32fddb4b2644811',
+  clientSecret: 'b6c19077bfed9b255a3a17f4d628854f21098b94',
+  repo: 'shenligang123.github.io',
+  owner: 'shenligang123',
+  admin: 'shenligang123',
+  id: md5(location.pathname),      // Ensure uniqueness and length less than 50
+  distractionFreeMode: false  // Facebook-like distraction free mode
+})
+gitalk.render('gitalk-container')
+</script>
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://example.com/2020/11/14/cobaltstrike%E5%85%8D%E6%9D%80%E8%BF%87360%E5%92%8C%E7%81%AB%E7%BB%92/" data-id="ckhhtq3ih0000ksutf0n4gc2x"
+         class="article-share-link">分享</a>
+      
+    </footer>
+
+  </div>
+
+  
+    
+  <nav class="article-nav">
+    
+    
+      <a href="/2020/11/12/hello-world/" class="article-nav-link">
+        <strong class="article-nav-caption">下一篇</strong>
+        <div class="article-nav-title">Hello World</div>
+      </a>
+    
+  </nav>
+
+
+  
+
+  
+    
+  <div class="gitalk" id="gitalk-container"></div>
+  
+<link rel="stylesheet" href="https://unpkg.com/gitalk/dist/gitalk.css">
+
+  
+<script src="https://unpkg.com/gitalk/dist/gitalk.min.js"></script>
+
+  
+<script src="https://cdn.bootcss.com/blueimp-md5/2.10.0/js/md5.min.js"></script>
+
+  <script type="text/javascript">
+    var gitalk = new Gitalk({
+      clientID: '89b3b32fddb4b2644811',
+      clientSecret: 'b6c19077bfed9b255a3a17f4d628854f21098b94',
+      repo: 'shenligang123.github.io',
+      owner: 'shenligang123',
+      admin: ['shenligang123'],
+      // id: location.pathname,      // Ensure uniqueness and length less than 50
+      id: md5(location.pathname),
+      distractionFreeMode: false,  // Facebook-like distraction free mode
+      pagerDirection: 'last'
+    })
+
+  gitalk.render('gitalk-container')
+  </script>
+
+  
+
+</article>
+
+
+
+</section>
+    </div>
+    
+<script src="/js/jquery-2.0.3.min.js"></script>
+
+
+<script src="/js/lazyload.min.js"></script>
+
+
+<script src="/js/busuanzi-2.3.pure.min.js"></script>
+
+
+
+  
+<script src="/fancybox/jquery.fancybox.min.js"></script>
+
+
+
+
+
+
+<script src="/js/technology.js"></script>
+
+
+  </div>
+</body>
+</html>
