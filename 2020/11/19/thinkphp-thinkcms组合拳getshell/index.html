@@ -9,7 +9,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
   <title>
-    thinkphp+thinkcms组合拳getshell |
+    thinkphp+thinkcms组合拳getshell-域控 |
     
     北城荒</title>
   
@@ -43,7 +43,7 @@
         
   
     <h1 class="article-title" itemprop="name">
-      thinkphp+thinkcms组合拳getshell
+      thinkphp+thinkcms组合拳getshell-域控
     </h1>
   
 
@@ -65,7 +65,7 @@
       
 
       
-        <p>日站遇到一个thinkphp5.0.20版本的，通过通杀payload发现无法成功，看来是过滤了一些函数</p>
+        <p>日站遇到一个thinkphp5.0.20版本的，通过通杀payload发现无法成功</p>
 <p><img src="/images/pasted-24.png" alt="upload successful"></p>
 <pre><code>    通过各种方式，最后成功绕过并getshell，下面记录一下为自己做个笔记</code></pre>
 <p>1、post方式提交并输出phpinfo</p>
@@ -117,7 +117,7 @@
 <p><img src="/images/pasted-47.png" alt="upload successful"></p>
 <pre><code>      好吧，我发现没返回shell，也正常，毕竟只要有个杀软就基本返回不来shell。</code></pre>
 <p><img src="/images/pasted-49.png" alt="upload successful"></p>
-<pre><code>       好吧，我们只能尝试其他方式了，既然开着445，就爆破一波试试s
+<pre><code>       好吧，我们只能尝试其他方式了，既然开着445，就爆破一波试试
        使用auxiliary/scanner/smb/smb_login模块，指定ip、字典,用户名等，开搞，还是不错的，跑出来了！！密码为admin2008</code></pre>
 <p><img src="/images/pasted-51.png" alt="upload successful"></p>
 <p><img src="/images/pasted-52.png" alt="upload successful"></p>
@@ -127,7 +127,7 @@
 <pre><code>       上线成功，并且是system权限</code></pre>
 <p><img src="/images/pasted-54.png" alt="upload successful"></p>
 <pre><code>       通过查看路由发现一个新的网段172.17.10.1，先添加上路由再说</code></pre>
-<p> <a href="/images/pasted-60.png">upload successful</a></p>
+<p><img src="/images/pasted-74.png" alt="upload successful"></p>
 <pre><code>       读取密码，hashdump发现密码为加密的</code></pre>
 <p><img src="/images/pasted-57.png" alt="upload successful"></p>
 <pre><code>       我们使用mk读取下密码试试
@@ -148,9 +148,22 @@
 <pre><code>      然后我们再次抓取密码,我们发现XTC域的管理员在此主机登录过，所以我们抓到了它的密码</code></pre>
 <p><img src="/images/pasted-66.png" alt="upload successful"></p>
 <p><img src="/images/pasted-67.png" alt="upload successful"></p>
-<pre><code>    但是我们现在需要知道域控在哪，我们去shell命令行找找他的DNS，因为DNS一般都是域控，我们看到了他的dns为172.17.10.250</code></pre>
+<pre><code>    但是我们现在需要知道域控在哪，我们去shell命令行找找他的DNS，因为DNS一般都是域控ip，我们看到了他的dns为172.17.10.250</code></pre>
 <p><img src="/images/pasted-68.png" alt="upload successful">     </p>
 <pre><code>    这个时候我们知道了域控主机与域管理员的密码，我们再次用smb模块进行攻击试试可以返回shell不</code></pre>
+<p><img src="/images/pasted-69.png" alt="upload successful"></p>
+<pre><code>    但是我们发现弹不回来，要不就是有杀软，要么就是网络问题
+    可以通过auxiliary/scanner/smb/smb_version模块看看服务器版本，后续也是知道其smb版本为3.1.1，应该有杀软。</code></pre>
+<p><img src="/images/pasted-70.png" alt="upload successful"></p>
+<pre><code>     后续我们去扫一下250有没有一些高危端口开放，发现其3389端口开着</code></pre>
+<p><img src="/images/pasted-71.png" alt="upload successful"></p>
+<pre><code>     那我们直接用msf开启socks代理，远程连接它
+     auxiliary/server/socks5或者auxiliary/server/socks4a
+     这里有个点需要注意，如果你是阿里云或者腾讯云的vps，这里的ip需要写你vps的内网ip，不然代理开启不成功</code></pre>
+<p><img src="/images/pasted-72.png" alt="upload successful"></p>
+<pre><code>    好了，我们直接本地设置代理远程它</code></pre>
+<p><img src="/images/pasted-73.png" alt="upload successful"></p>
+<pre><code>    好了，域控就拿下了！！！！后续我再使用域漏洞打一遍试试！</code></pre>
 <div id="gitalk-container"></div>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.css">
 <script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
