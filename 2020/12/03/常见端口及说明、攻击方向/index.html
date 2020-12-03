@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  
+  
+  
+    <meta name="description" content="内网渗透实战篇">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <title>
+    常见端口及说明、攻击方向 |
+    
+    北城荒</title>
+  
+    <link rel="shortcut icon" href="/favicon.ico">
+  
+  
+<link rel="stylesheet" href="/css/style.css">
+
+  
+<link rel="stylesheet" href="/css/technology.css">
+
+  
+    
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.min.css">
+
+  
+  
+<script src="/js/pace.min.js"></script>
+
+<meta name="generator" content="Hexo 5.2.0"></head>
+
+<body>
+  <div id="container">
+    <div id="wrap">
+      <section class="outer">
+  <article id="post-常见端口及说明、攻击方向" class="article article-type-post" itemscope itemprop="blogPost" data-scroll-reveal>
+
+  <div class="article-inner">
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      常见端口及说明、攻击方向
+    </h1>
+  
+
+      </header>
+    
+
+    
+      <div class="article-meta">
+        <a href="/2020/12/03/%E5%B8%B8%E8%A7%81%E7%AB%AF%E5%8F%A3%E5%8F%8A%E8%AF%B4%E6%98%8E%E3%80%81%E6%94%BB%E5%87%BB%E6%96%B9%E5%90%91/" class="article-date">
+  <time datetime="2020-12-03T05:09:33.000Z" itemprop="datePublished">2020-12-03</time>
+</a>
+        
+      </div>
+    
+
+    <div class="article-entry" itemprop="articleBody">
+      
+
+      
+
+      
+        <p>1、文件共享服务端口</p>
+<pre><code>   端口号: 21/22/69
+   端口说明：Ftp/Tftp文件传输协议
+   攻击方向：允许匿名得上传、下载、爆破和嗅探操作
+
+   端口号：2049
+   端口说明：Nfs服务
+   攻击方向：配置不当
+
+   端口号：139
+   端口说明：Samba服务
+   攻击方向：爆破、未授权访问、远程代码执行
+
+   端口号：389
+   端口说明：Ldap目录访问协议
+   攻击方向：注入、允许匿名访问、弱口令</code></pre>
+<p>2、远程连接服务端口</p>
+<pre><code>   端口号：22
+   端口说明：SSH远程连接
+   攻击方向：爆破、SSH隧道及内网代理转发、文件传输
+
+   端口号：23
+   端口说明：Telnet远程连接
+   攻击方向：爆破、嗅探、弱口令
+
+   端口号：3389
+   端口说明：Rdp远程桌面连接
+   攻击方向：shift后门(需要win 2003以下得系统)、爆破
+
+   端口号：5900
+   端口说明：VNC
+   攻击方向：弱口令爆破
+
+   端口号：5632
+   端口说明：PyAnywhere服务
+   攻击方向：抓密码、代码执行</code></pre>
+<p>3、Web应用服务端口</p>
+<pre><code>   端口号：80/443/8080
+   端口说明：常见的web服务端口
+   攻击方向：Web攻击、爆破、对应服务器版本漏洞
+
+   端口号：7001/7002
+   端口说明：WebLogic控制台
+   攻击方向：Java反序列化、弱口令
+
+   端口号：8080/8089
+   端口说明：Jboss/Resin/Jetty/Jenkins
+   攻击方向：反序列化、控制台弱口令
+
+   端口号：9090
+   端口说明：WebSphere控制台
+   攻击方向：Java反序列化、弱口令
+
+   端口号：4848
+   端口说明：GlassFish控制台
+   攻击方向：弱口令
+
+   端口号：1352
+   端口说明：Lotus domino邮件服务
+   攻击方向：弱口令、信息泄露、爆破
+
+   端口号：10000
+   端口说明：Webmin-Web控制面板
+   攻击方向：弱口令</code></pre>
+<p>4、数据库服务端口</p>
+<pre><code>   端口号：3306
+   端口说明：Mysql
+   攻击方向：注入、提权、爆破
+
+   端口号：1433
+   端口说明：MSSQL
+   攻击方向：注入、提权、SA弱口令、爆破
+
+   端口号：1521
+   端口说明：Oracle
+   攻击方向：TNS爆破、注入、反弹shell
+
+   端口号：5432
+   端口说明：PostgreSQL
+   攻击方向：爆破、注入、弱口令
+
+   端口号：27017/27018
+   端口说明：MongoDB
+   攻击方向：爆破、未授权访问
+
+   端口号：6379
+   端口说明：redis
+   攻击方向：未授权访问、弱口令爆破
+
+   端口号：5000
+   端口说明：SysBase/DB2
+   攻击方向：爆破、注入</code></pre>
+<p>5、邮件服务端口</p>
+<pre><code>   端口号：25
+   端口说明：SMTP邮件服务
+   攻击方向：邮件伪造
+
+   端口号：110
+   端口说明：POP3协议
+   攻击方向：爆破、嗅探
+
+   端口号：143
+   端口说明：IMAP协议
+   攻击方向：爆破</code></pre>
+<p>6、网络常见协议端口</p>
+<pre><code>   端口号：53
+   端口说明：DNS域名系统
+   攻击方向：允许区域传送、DNS劫持、缓存投毒、欺骗
+
+   端口号：67/68
+   端口说明：DHCP服务
+   攻击方向：劫持、欺骗
+
+   端口号：161
+   端口说明：SNMP协议
+   攻击方向：爆破、搜集目标内网信息</code></pre>
+<p>7、特殊服务端口</p>
+<pre><code>   端口号：2181
+   端口说明：Zookeeper服务
+   攻击方向：未授权访问
+
+   端口号：8069
+   端口说明：Zabbix服务
+   攻击方向：远程执行、SQL注入
+
+   端口号：9200/9300
+   端口说明：Elasticsearch
+   攻击方向：远程执行
+
+   端口号：11211
+   端口说明：Memcache服务
+   攻击方向：未授权访问
+
+   端口号：512/513/514
+   端口说明：Linux Rexec服务
+   攻击方向：爆破、Rlogin登录
+
+   端口号：873
+   端口说明：Rsync服务
+   攻击方向：匿名访问、文件上传
+
+   端口号：3690
+   端口说明：Svn服务
+   攻击方向：Svn泄露、未授权访问
+
+   端口号：50000
+   端口说明：SAP Management Console
+   攻击方向：远程执行</code></pre>
+<div id="gitalk-container"></div>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.css">
+<script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+<script src="https://priesttomb.github.io/js/md5.min.js"></script>
+<script >
+var gitalk = new Gitalk({
+  clientID: '89b3b32fddb4b2644811',
+  clientSecret: 'b6c19077bfed9b255a3a17f4d628854f21098b94',
+  repo: 'shenligang123.github.io',
+  owner: 'shenligang123',
+  admin: 'shenligang123',
+  id: md5(location.pathname),      // Ensure uniqueness and length less than 50
+  distractionFreeMode: false  // Facebook-like distraction free mode
+})
+gitalk.render('gitalk-container')
+</script>
+
+
+
+
+
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://example.com/2020/12/03/%E5%B8%B8%E8%A7%81%E7%AB%AF%E5%8F%A3%E5%8F%8A%E8%AF%B4%E6%98%8E%E3%80%81%E6%94%BB%E5%87%BB%E6%96%B9%E5%90%91/" data-id="cki8equ590000q0utes4g1vji"
+         class="article-share-link">分享</a>
+      
+    </footer>
+
+  </div>
+
+  
+    
+  <nav class="article-nav">
+    
+    
+      <a href="/2020/11/22/thinkphp-thinkcms%E7%BB%84%E5%90%88%E6%8B%B3getshell2/" class="article-nav-link">
+        <strong class="article-nav-caption">下一篇</strong>
+        <div class="article-nav-title">bees-cms登录绕过+文件上传getshell</div>
+      </a>
+    
+  </nav>
+
+
+  
+
+  
+    
+  <div class="gitalk" id="gitalk-container"></div>
+  
+<link rel="stylesheet" href="https://unpkg.com/gitalk/dist/gitalk.css">
+
+  
+<script src="https://unpkg.com/gitalk/dist/gitalk.min.js"></script>
+
+  
+<script src="https://cdn.bootcss.com/blueimp-md5/2.10.0/js/md5.min.js"></script>
+
+  <script type="text/javascript">
+    var gitalk = new Gitalk({
+      clientID: '89b3b32fddb4b2644811',
+      clientSecret: 'b6c19077bfed9b255a3a17f4d628854f21098b94',
+      repo: 'shenligang123.github.io',
+      owner: 'shenligang123',
+      admin: ['shenligang123'],
+      // id: location.pathname,      // Ensure uniqueness and length less than 50
+      id: md5(location.pathname),
+      distractionFreeMode: false,  // Facebook-like distraction free mode
+      pagerDirection: 'last'
+    })
+
+  gitalk.render('gitalk-container')
+  </script>
+
+  
+
+</article>
+
+
+
+</section>
+    </div>
+    
+<script src="/js/jquery-2.0.3.min.js"></script>
+
+
+<script src="/js/lazyload.min.js"></script>
+
+
+<script src="/js/busuanzi-2.3.pure.min.js"></script>
+
+
+
+  
+<script src="/fancybox/jquery.fancybox.min.js"></script>
+
+
+
+
+
+
+<script src="/js/technology.js"></script>
+
+
+  </div>
+</body>
+</html>
