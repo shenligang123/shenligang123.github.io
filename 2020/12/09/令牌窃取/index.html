@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  
+  
+  
+    <meta name="description" content="内网渗透实战篇">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <title>
+    令牌窃取 |
+    
+    北城荒</title>
+  
+    <link rel="shortcut icon" href="/favicon.ico">
+  
+  
+<link rel="stylesheet" href="/css/style.css">
+
+  
+<link rel="stylesheet" href="/css/technology.css">
+
+  
+    
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.min.css">
+
+  
+  
+<script src="/js/pace.min.js"></script>
+
+<meta name="generator" content="Hexo 5.2.0"></head>
+
+<body>
+  <div id="container">
+    <div id="wrap">
+      <section class="outer">
+  <article id="post-令牌窃取" class="article article-type-post" itemscope itemprop="blogPost" data-scroll-reveal>
+
+  <div class="article-inner">
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      令牌窃取
+    </h1>
+  
+
+      </header>
+    
+
+    
+      <div class="article-meta">
+        <a href="/2020/12/09/%E4%BB%A4%E7%89%8C%E7%AA%83%E5%8F%96/" class="article-date">
+  <time datetime="2020-12-09T07:40:09.000Z" itemprop="datePublished">2020-12-09</time>
+</a>
+        
+      </div>
+    
+
+    <div class="article-entry" itemprop="articleBody">
+      
+
+      
+
+      
+        <p>令牌窃取</p>
+<p>  1、令牌简介及原理</p>
+<pre><code>    令牌(Token)就是系统的临时密钥，相当于账户名与密码，用来决定是否允许这次请求和判断这次请求是属于哪一个用户的。它允许你在不提供密码或其他凭证的前提下，访问网络和系统资源。这些令牌将持续存在于系统中，除非系统重新启动。
+    令牌最大的特点是随机性，不可预测，一般黑客或软件无法猜测出来。令牌有很多种，比如访问令牌(Access Token)表示访问控制操作主题的系统对象；密保令牌(Security token),又叫做认证令牌或者硬件令牌，是一种计算机身份校验的物理设备，例如U盾；会话令牌(Session Token)是交互性中唯一的身份标识符。
+
+     在假冒令牌攻击中需要使用Kerberos协议。所以在使用假冒令牌前，先需要了解Kerberos协议。Kerberos是一种网络认证协议，其设计目标是通过密钥系统为客户机/服务器应用程序提供强大的认证服务。下图为其工作机制</code></pre>
+<p><img src="/images/pasted-105.png" alt="upload successful"></p>
+<pre><code> 客户端请求证书的过程如下所示
+      1) 客户端向认证服务器(AS)发送请求，要求得到服务器的证书。
+      2) AS收到请求后，将包含客户端密钥的加密证书响应发送给客户端。该证书包括服务器ticket(包括服务器密钥加密的客户机身份和一份会话密钥)和一个临时加密密钥(又称为会话密钥，session key)。当然，认证服务器也会给服务器发送一份该证书，用来使服务器认证登录客户端的身份。
+      3) 客户端将ticket传送到服务器上，服务器确认该客户端的话，便允许它登录服务器。
+      4) 客户端登录成功后，攻击者就可以通过入侵服务器获取客户端的令牌。</code></pre>
+<p>2、假冒令牌实战利用</p>
+<pre><code>     此时假设已经成功获取到目标的meterpreter shell，首先getuid命令查看已经获取的权限，然后输入getsystem，发现提权失败。
+     我们先输入use incognito命令，然后输入list_token -u列出可用的token,如图所示</code></pre>
+<p><img src="/images/pasted-106.png" alt="upload successful"></p>
+<pre><code>     可以看到有两种类型的令牌：一种是Delegation Tokens，也就是授权令牌，它支持交互式登录(例如可以通过远程桌面登录访问);还有一种是Impersonation Tokens，也就是模拟令牌，它是非交互的会话。令牌的数量其实取决于meterpreter shell的访问级别。
+     上图显示，我们已经获得了一个管理员的授权令牌，我们就要假冒这个令牌，成功后即可拥有他的权限。
+     接下来使用impersonate_token命令假冒administrator进行攻击。</code></pre>
+<p><img src="/images/pasted-107.png" alt="upload successful"></p>
+<pre><code>     知识点：在输入GOD\Administrator时需要输入两个反斜杠(\\)。
+     运行成功后，就可以看到whoami命令结果已经是administrator系统管理员了。</code></pre>
+<div id="gitalk-container"></div>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.css">
+<script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+<script src="https://priesttomb.github.io/js/md5.min.js"></script>
+<script >
+var gitalk = new Gitalk({
+  clientID: '89b3b32fddb4b2644811',
+  clientSecret: 'b6c19077bfed9b255a3a17f4d628854f21098b94',
+  repo: 'shenligang123.github.io',
+  owner: 'shenligang123',
+  admin: 'shenligang123',
+  id: md5(location.pathname),      // Ensure uniqueness and length less than 50
+  distractionFreeMode: false  // Facebook-like distraction free mode
+})
+gitalk.render('gitalk-container')
+</script>
+
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://example.com/2020/12/09/%E4%BB%A4%E7%89%8C%E7%AA%83%E5%8F%96/" data-id="ckih65wt800088sut1wit6fzj"
+         class="article-share-link">分享</a>
+      
+    </footer>
+
+  </div>
+
+  
+    
+  <nav class="article-nav">
+    
+      <a href="/2020/12/09/Hash%E6%94%BB%E5%87%BB/" class="article-nav-link">
+        <strong class="article-nav-caption">上一篇</strong>
+        <div class="article-nav-title">
+          
+            Hash攻击
+          
+        </div>
+      </a>
+    
+    
+      <a href="/2020/12/09/msf%E8%BF%9B%E7%A8%8B%E8%BF%81%E7%A7%BB/" class="article-nav-link">
+        <strong class="article-nav-caption">下一篇</strong>
+        <div class="article-nav-title">msf进程迁移</div>
+      </a>
+    
+  </nav>
+
+
+  
+
+  
+    
+  <div class="gitalk" id="gitalk-container"></div>
+  
+<link rel="stylesheet" href="https://unpkg.com/gitalk/dist/gitalk.css">
+
+  
+<script src="https://unpkg.com/gitalk/dist/gitalk.min.js"></script>
+
+  
+<script src="https://cdn.bootcss.com/blueimp-md5/2.10.0/js/md5.min.js"></script>
+
+  <script type="text/javascript">
+    var gitalk = new Gitalk({
+      clientID: '89b3b32fddb4b2644811',
+      clientSecret: 'b6c19077bfed9b255a3a17f4d628854f21098b94',
+      repo: 'shenligang123.github.io',
+      owner: 'shenligang123',
+      admin: ['shenligang123'],
+      // id: location.pathname,      // Ensure uniqueness and length less than 50
+      id: md5(location.pathname),
+      distractionFreeMode: false,  // Facebook-like distraction free mode
+      pagerDirection: 'last'
+    })
+
+  gitalk.render('gitalk-container')
+  </script>
+
+  
+
+</article>
+
+
+
+</section>
+    </div>
+    
+<script src="/js/jquery-2.0.3.min.js"></script>
+
+
+<script src="/js/lazyload.min.js"></script>
+
+
+<script src="/js/busuanzi-2.3.pure.min.js"></script>
+
+
+
+  
+<script src="/fancybox/jquery.fancybox.min.js"></script>
+
+
+
+
+
+
+<script src="/js/technology.js"></script>
+
+
+  </div>
+</body>
+</html>
