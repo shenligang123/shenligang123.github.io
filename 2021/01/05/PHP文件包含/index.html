@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  
+  
+  
+    <meta name="description" content="内网渗透实战篇">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <title>
+    PHP文件包含 |
+    
+    北城荒</title>
+  
+    <link rel="shortcut icon" href="/favicon.ico">
+  
+  
+<link rel="stylesheet" href="/css/style.css">
+
+  
+<link rel="stylesheet" href="/css/technology.css">
+
+  
+    
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.min.css">
+
+  
+  
+<script src="/js/pace.min.js"></script>
+
+<meta name="generator" content="Hexo 5.2.0"></head>
+
+<body>
+  <div id="container">
+    <div id="wrap">
+      <section class="outer">
+  <article id="post-PHP文件包含" class="article article-type-post" itemscope itemprop="blogPost" data-scroll-reveal>
+
+  <div class="article-inner">
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      PHP文件包含
+    </h1>
+  
+
+      </header>
+    
+
+    
+      <div class="article-meta">
+        <a href="/2021/01/05/PHP%E6%96%87%E4%BB%B6%E5%8C%85%E5%90%AB/" class="article-date">
+  <time datetime="2021-01-05T06:20:31.000Z" itemprop="datePublished">2021-01-05</time>
+</a>
+        
+      </div>
+    
+
+    <div class="article-entry" itemprop="articleBody">
+      
+
+      
+
+      
+        <p>文件包含之讲义：</p>
+<pre><code>   严格来说，文件包含漏洞是“代码注入”的一种。其原理就是注入一段用户能控制得脚本或代码，并让服务端执行。“代码注入”的典型代表就是文件包含。文件包含可能出现在JSP、PHP、ASP等语言中，常见的导致文件包含的函数如下
+
+   PHP:include(),include_once(),require(),require_once(),fopen(),readfile(),...
+   JSP/Servlet:ava.io.File(),java.io.FileReader(),...
+   ASP:include file,include virtual,...</code></pre>
+<p>一、文件包含是php的一种常见用法，主要由4个函数完成</p>
+<pre><code>   include(),require(),include_once(),require_once()
+   当使用这4个函数包含一个新的文件时，该文件将作为PHP代码执行，PHP内核并不会在意被包含的文件是什么类型。所以如果被包含的是txt、图片、远程URL，也都将作为PHP代码执行。这一特性，在实施攻击时将非常有用。
+
+   要想成功利用文件包含漏洞，需满足以下两条件
+   1)、include()等函数通过动态变量的方式引入需要包含的文件
+   2)、用户能够控制该动态变量</code></pre>
+<p> 复现：</p>
+<p>   如以下代码：</p>
+<pre><code>  &lt;?php
+  include($_GET[test]);
+  ?&gt;
+  或者
+  &lt;?php
+  include($_GET[&#39;file&#39;].&#39;txt&#39;);
+  ?&gt;</code></pre>
+<p>   引入同目录的一个文件时：</p>
+<p><img src="/images/pasted-113.png" alt="upload successful"></p>
+<p>   当这个txt文件包含了可执行的php代码时</p>
+<p><img src="/images/pasted-115.png" alt="upload successful"></p>
+<pre><code>再次执行漏洞URL，代码就被执行了</code></pre>
+<p><img src="/images/pasted-116.png" alt="upload successful"></p>
+<pre><code>远程文件包含的条件：
+php.ini文件里allow_url_fopen与allow_url_include需要都设置为On才能支持远程文件包含
+
+ 如果遇到下列情况，可以用“？”或者“%00”截断</code></pre>
+<p><img src="/images/pasted-117.png" alt="upload successful"></p>
+<p><img src="/images/pasted-118.png" alt="upload successful"></p>
+<p>二、本地文件包含</p>
+<pre><code>   能够打开并包含本地文件的漏洞，被称为本地文件包含漏洞，比如下面这段代码，就存在此漏洞。
+   &lt;?php
+   $file = $_GET[&#39;file&#39;];
+   if(file_exists(&#39;/home/wwwrun/&#39;.$file.&#39;.php&#39;))&#123;
+     include &#39;/home/wwwrun/&#39;.$file.&#39;.php&#39;;
+   &#125;
+   ?&gt;
+
+ 用户能够控制参数file,当file的值为“../../etc/passwd”时，PHP将访问/etc/passwd文件。但是在此之前，还需要解决一个小问题：
+ include &#39;/home/wwwrun/&#39;.$file.&#39;.php&#39;;
+
+ 这种写法将变量与字符串连接起来，假如用户控制$file的值为“../../etc/passwd”时，这段代码相当于：
+ include &#39;/home/wwwrun/../../etc/passwd.php&#39;;
+
+ 被包含的文件实际上是“/etc/passwd.php”，但是这个文件其实是不存在的。
+
+ PHP内核是由C语言实现的，因此使用了C语言中的一些字符串处理函数。在连接字符串时，0字节(\x00)将作为字符串结束符。所以在这个地方，攻击者只要在最后加入一个0字节，就能截断file变量之后的字符串，即：
+ ../../etc/passwd\0
+
+ 通过web输入时，只需UrlEncode，变成
+ ../../etc/passwd%00</code></pre>
+<p>但是一般的web应用中，0字节用户其实是不需要使用的，因此完全可以禁用0字节，比如：</p>
+<pre><code> &lt;?php
+ function getVar($name)
+ &#123;
+   $value=isset($_GET[$name]) ? $_GET[$name]:null;
+   if(is_string($value))&#123;
+     $value = str_replace(&quot;\0&quot;,&#39;&#39;,$value);
+   &#125;
+ &#125;
+ ?&gt;</code></pre>
+<p>但是这样并没有解决所有问题，利用操作系统对目录最大长度的限制，可以不需要0字节而达到截断的目的。目录字符串，在windows下256个字节、Linux下4096个字节时会达到最大值，最大值长度之后的字符将被丢弃。比如通过./的方式构造出比较长的目录</p>
+<div id="gitalk-container"></div>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.css">
+<script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+<script src="https://priesttomb.github.io/js/md5.min.js"></script>
+<script >
+var gitalk = new Gitalk({
+  clientID: '89b3b32fddb4b2644811',
+  clientSecret: 'b6c19077bfed9b255a3a17f4d628854f21098b94',
+  repo: 'shenligang123.github.io',
+  owner: 'shenligang123',
+  admin: 'shenligang123',
+  id: md5(location.pathname),      // Ensure uniqueness and length less than 50
+  distractionFreeMode: false  // Facebook-like distraction free mode
+})
+gitalk.render('gitalk-container')
+</script>
+
+
+
+
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://example.com/2021/01/05/PHP%E6%96%87%E4%BB%B6%E5%8C%85%E5%90%AB/" data-id="ckjjnyy9j00029kut12ht0rnd"
+         class="article-share-link">分享</a>
+      
+    </footer>
+
+  </div>
+
+  
+    
+  <nav class="article-nav">
+    
+    
+      <a href="/2020/12/09/%E5%90%8E%E6%B8%97%E9%80%8F%E6%94%BB%E5%87%BB-%E5%90%8E%E9%97%A8/" class="article-nav-link">
+        <strong class="article-nav-caption">下一篇</strong>
+        <div class="article-nav-title">后渗透攻击-后门</div>
+      </a>
+    
+  </nav>
+
+
+  
+
+  
+    
+  <div class="gitalk" id="gitalk-container"></div>
+  
+<link rel="stylesheet" href="https://unpkg.com/gitalk/dist/gitalk.css">
+
+  
+<script src="https://unpkg.com/gitalk/dist/gitalk.min.js"></script>
+
+  
+<script src="https://cdn.bootcss.com/blueimp-md5/2.10.0/js/md5.min.js"></script>
+
+  <script type="text/javascript">
+    var gitalk = new Gitalk({
+      clientID: '89b3b32fddb4b2644811',
+      clientSecret: 'b6c19077bfed9b255a3a17f4d628854f21098b94',
+      repo: 'shenligang123.github.io',
+      owner: 'shenligang123',
+      admin: ['shenligang123'],
+      // id: location.pathname,      // Ensure uniqueness and length less than 50
+      id: md5(location.pathname),
+      distractionFreeMode: false,  // Facebook-like distraction free mode
+      pagerDirection: 'last'
+    })
+
+  gitalk.render('gitalk-container')
+  </script>
+
+  
+
+</article>
+
+
+
+</section>
+    </div>
+    
+<script src="/js/jquery-2.0.3.min.js"></script>
+
+
+<script src="/js/lazyload.min.js"></script>
+
+
+<script src="/js/busuanzi-2.3.pure.min.js"></script>
+
+
+
+  
+<script src="/fancybox/jquery.fancybox.min.js"></script>
+
+
+
+
+
+
+<script src="/js/technology.js"></script>
+
+
+  </div>
+</body>
+</html>
